@@ -1,5 +1,4 @@
 library(shiny)
-library(shinycssloaders)
 library(quantmod)
 library(zoo)
 library(forecast)
@@ -46,26 +45,4 @@ benchmark_choices <- c(
   "Nasdaq 100 (QQQ)" = "QQQ",
   "Total Market (VTI)" = "VTI",
   "Dow Jones (DIA)"  = "DIA"
-)
-
-# Landing page: optional Shadertoy background (paste the iframe "src" from Shadertoy's embed dialog).
-# Example: "https://www.shadertoy.com/embed/XXXX?gui=false&t=10&muted=true&prevent_focus=true"
-# Leave empty to use the built-in CSS gradient + noise fallback.
-landing_shadertoy_embed_url <- ""
-
-ggplot2::theme_set(
-  ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(
-      plot.background   = ggplot2::element_rect(fill = "#0a1018", color = NA),
-      panel.background = ggplot2::element_rect(fill = "#0a1018", color = NA),
-      panel.border     = ggplot2::element_blank(),
-      panel.grid.major = ggplot2::element_line(color = "grey32", linewidth = 0.35),
-      panel.grid.minor = ggplot2::element_line(color = "grey22", linewidth = 0.2),
-      axis.text        = ggplot2::element_text(color = "grey75"),
-      axis.title       = ggplot2::element_text(color = "grey82"),
-      plot.title       = ggplot2::element_text(color = "grey95", face = "bold"),
-      legend.text      = ggplot2::element_text(color = "grey78"),
-      legend.title     = ggplot2::element_text(color = "grey88"),
-      strip.text       = ggplot2::element_text(color = "grey88", face = "bold")
-    )
 )

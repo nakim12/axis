@@ -3,7 +3,9 @@
 r_mods <- c(
   "config.R",
   "helpers.R",
+  "plot_theme.R",
   "app_theme.R",
+  "page_ui.R",
   "portfolio.R",
   "snapshots.R",
   "scenarios.R",

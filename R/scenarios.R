@@ -1,4 +1,4 @@
-# Historical windows and simple additive return shocks for the Scenarios tab.
+# Historical windows and simple additive return shocks for the Stress page.
 
 stress_presets <- list(
   custom = NULL,

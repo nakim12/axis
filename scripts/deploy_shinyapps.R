@@ -48,10 +48,22 @@ r_files <- if (dir.exists("R")) {
 } else {
   character()
 }
+www_files <- if (dir.exists("www")) {
+  list.files("www", recursive = TRUE, full.names = TRUE)
+} else {
+  character()
+}
+font_files <- if (dir.exists("fonts")) {
+  list.files("fonts", pattern = "\\.ttf$", full.names = TRUE)
+} else {
+  character()
+}
 app_files <- c(
   "app.R",
   if (file.exists("global.R")) "global.R",
-  sort(r_files)
+  sort(r_files),
+  sort(www_files),
+  sort(font_files)
 )
 
 deploy_args <- list(

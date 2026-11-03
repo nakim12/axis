@@ -1,0 +1,34 @@
+/* Observatory design tokens. Chart colors in R/plot_theme.R mirror these values. */
+
+:root {
+  --parchment: #f1ebdf;
+  --vellum: #f8f4ec;
+  --sand: #e7decb;
+  --field: #fffdf8;
+
+  --ink: #1d1a15;
+  --ink-soft: #4a4339;
+  --muted: #857b6a;
+
+  --line: rgba(29, 26, 21, 0.12);
+  --line-strong: rgba(29, 26, 21, 0.22);
+
+  --brass: #a0763a;
+  --brass-deep: #6f4f1f;
+  --brass-wash: rgba(160, 118, 58, 0.12);
+
+  --slate: #4f6b80;
+  --stone: #8a8170;
+  --gain: #4e7a56;
+  --loss: #a5463a;
+
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}

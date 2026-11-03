@@ -21,7 +21,10 @@ on:
     branches: [main]
     paths:
       - "app.R"
+      - "global.R"
       - "R/**"
+      - "www/**"
+      - "fonts/**"
       - "scripts/deploy_shinyapps.R"
       - "DESCRIPTION"
       - ".github/workflows/deploy-shinyapps.yml"

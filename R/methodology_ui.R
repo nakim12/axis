@@ -2,20 +2,17 @@
 
 methodology_panel <- function() {
   tagList(
-    div(class = "builder-header",
-      h3("Methodology & limitations"),
-      tags$p(class = "text-muted",
-        "How metrics are computed in this app, and what not to infer from them."
-      )
-    ),
+    page_header(NULL, "Methodology", "How the numbers are <em>made</em>.",
+      "How metrics are computed in this app, and what not to infer from them."),
 
+    tags$div(class = "method-grid",
     wellPanel(
       h4("Data"),
       tags$ul(
         tags$li("Daily adjusted close prices from Yahoo Finance via ", tags$code("quantmod"), "."),
-        tags$li("Your analysis window is the date range chosen on ", tags$b("Build Portfolio"), "."),
-        tags$li("The Performance tab’s per-ticker charts use the tickers selected under ",
-                tags$b("Holdings Explorer"), " → ", tags$b("Price Trend"), " and about the last year of data (separate from the portfolio builder window).")
+        tags$li("Your analysis window is the date range chosen on ", tags$b("Portfolio"), "."),
+        tags$li("Per-ticker charts under ", tags$b("Explore"), " \u2192 ", tags$b("Prices & returns"),
+                " use the tickers selected there and about the last year of data (separate from the portfolio window).")
       )
     ),
 
@@ -71,13 +68,13 @@ methodology_panel <- function() {
     ),
 
     wellPanel(
-      h4("Holdings Explorer → Forecast"),
+      h4("Explore \u2192 Forecast"),
       tags$p(tags$b("ARIMA"), " on prices is ", tags$b("exploratory"), ": useful for methodology demos, not a trading signal. ",
              "Uncertainty and model error are real; treat forecasts as one input among many.")
     ),
 
     wellPanel(
-      h4("Scenarios & stress"),
+      h4("Stress"),
       tags$ul(
         tags$li(tags$b("Historical episodes:"), " slice your portfolio (and benchmark) to a calendar window and rebase cumulative return to the first day in that window. ",
                 "Summary stats are descriptive only."),
@@ -90,7 +87,7 @@ methodology_panel <- function() {
     ),
 
     wellPanel(
-      h4("Allocation Lab"),
+      h4("Allocation"),
       tags$ul(
         tags$li(tags$b("Inputs:"), " sample mean and covariance of daily simple returns on your analysis window, annualized (×252 and ×252 for cov). ",
                 "Your current weights are compared to alternative rules on that same window only."),
@@ -103,10 +100,22 @@ methodology_panel <- function() {
     ),
 
     wellPanel(
+      h4("Insight confidence"),
+      tags$ul(
+        tags$li(tags$b("High:"), " follows directly from the weights (sector share, concentration), ",
+                "or is a risk estimate on roughly two years or more of daily data."),
+        tags$li(tags$b("Medium:"), " risk estimates (volatility, beta, correlation, risk contribution) on about six months to two years, ",
+                "or return-based statements on three years or more."),
+        tags$li(tags$b("Low:"), " return-based statements (return, excess return, Sharpe) on under three years, or anything on a very short window. ",
+                "Mean returns are noisy; a single year says little about the next.")
+      )
+    ),
+
+    wellPanel(
       h4("Snapshots, pins, and bundled export"),
       tags$ul(
         tags$li(tags$b("Portfolio JSON"), " stores weights, benchmark ticker, analysis dates, and (if you already analyzed) a compact numeric metrics summary. ",
-                "You can reload it from ", tags$b("Build Portfolio"), " or share the file with yourself on another machine."),
+                "You can reload it from ", tags$b("Portfolio"), " or share the file with yourself on another machine."),
         tags$li(tags$b("Diagnosis pins"), " capture the headline metrics table for the ", tags$b("current"), " run so you can compare after changing weights. ",
                 "They live in this browser session only and disappear on refresh."),
         tags$li(tags$b("Full report (.zip)"), " bundles the diagnosis text export, key CSVs, and the portfolio JSON snapshot.")
@@ -119,6 +128,7 @@ methodology_panel <- function() {
         "Educational software only — not investment, tax, or legal advice. ",
         "Past results do not guarantee future performance. You are responsible for your own decisions."
       )
+    )
     )
   )
 }
