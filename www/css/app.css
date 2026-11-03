@@ -89,6 +89,7 @@ hr {
   box-shadow: none;
   transition: border-color 0.3s var(--ease), background 0.3s var(--ease);
 }
+.bslib-page-navbar .navbar { border-bottom: 1px solid transparent; }
 body.is-scrolled .navbar { border-bottom-color: var(--line); }
 .navbar > .container-fluid {
   padding: 0;
@@ -121,6 +122,8 @@ body.is-scrolled .navbar { border-bottom-color: var(--line); }
   border-radius: 999px;
   transition: color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
+/* Outranks bslib >= 0.9's `.nav-underline .nav-link:not(:empty)` 5px !important padding. */
+.navbar .navbar-nav .nav-link:not(:empty) { padding: 0.5rem 0.95rem !important; }
 .navbar .nav-link:hover,
 .navbar .navbar-nav > li > a:hover {
   color: var(--ink) !important;
@@ -147,7 +150,8 @@ body.is-scrolled .navbar { border-bottom-color: var(--line); }
     border-left: 1px solid var(--line);
   }
 }
-.navbar .navbar-nav a[data-value="methodology"] {
+.navbar .navbar-nav a[data-value="methodology"],
+.navbar .navbar-nav a.nav-link[data-value="methodology"]:not(:empty) {
   width: 30px;
   height: 30px;
   padding: 0 !important;
@@ -583,6 +587,7 @@ body > .container-fluid > .tab-content > .tab-pane[data-value="methodology"] {
   margin-bottom: 0.9rem;
 }
 .shiny-input-container > label,
+.shiny-input-container .control-label,
 .control-label {
   font-family: var(--font-mono);
   font-size: 10.5px;

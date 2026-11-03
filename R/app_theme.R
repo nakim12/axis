@@ -1,6 +1,6 @@
 # Observatory theme: Bootstrap 5 via bslib plus static assets in www/.
 
-ASSET_VERSION <- "14"
+ASSET_VERSION <- "15"
 
 axis_bs_theme <- function() {
   bslib::bs_theme(
