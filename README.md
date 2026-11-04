@@ -2,7 +2,7 @@
 
 **A Shiny workspace for self-directed investors who want to stress-test a portfolio—weights, benchmark, and risk—in one place before they commit to a story about “why this allocation.”**
 
-*GitHub:* [nakim12/axis](https://github.com/nakim12/axis) · *Live:* [nathankim.shinyapps.io/investment-performance-tracker](https://nathankim.shinyapps.io/investment-performance-tracker/)
+*GitHub:* [nakim12/axis](https://github.com/nakim12/axis) · *Live:* [axis.nakim.me](https://axis.nakim.me/)
 
 ![Axis landing page with the armillary-sphere hero](docs/screenshots/landing.jpg)
 
@@ -122,6 +122,7 @@ axis/
 │   └── img/axis-spinner.svg      # Loading indicator
 ├── fonts/                        # Inter and JetBrains Mono for charts
 ├── docs/screenshots/             # README images
+├── site/                         # axis.nakim.me wrapper page (Vercel)
 ├── scripts/
 │   └── deploy_shinyapps.R        # CI / manual publish helper
 ├── .github/workflows/            # Deploy workflow
@@ -160,7 +161,9 @@ After editing anything in `www/`, bump `ASSET_VERSION` in `R/app_theme.R` so bro
 
 ## Live demo
 
-**[Open the hosted app on shinyapps.io](https://nathankim.shinyapps.io/investment-performance-tracker/)**
+**[axis.nakim.me](https://axis.nakim.me/)**
+
+The app is hosted on [shinyapps.io](https://nathankim.shinyapps.io/investment-performance-tracker/); `site/` is a one-page wrapper, deployed on Vercel, that serves it at the custom domain.
 
 ---
 
