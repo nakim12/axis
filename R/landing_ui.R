@@ -272,7 +272,7 @@ landing_panel <- function() {
           landing_feature("iv", "Scenarios & stress",
             "Replay known rough patches on your weights, then layer a daily shock for a mechanical what-if."),
           landing_feature("v", "Allocation",
-            "Long-only model portfolios, including max Sharpe and shrunk-covariance min variance, compared side by side with your current mix."),
+            "Long-only model portfolios compared with your current mix, then walk-forward backtested with costs to see if they would have helped."),
           landing_feature("vi", "Exports",
             "Portfolio snapshots as JSON, metrics as CSV, and a bundled report you can keep or share.")
         )
@@ -292,7 +292,7 @@ landing_panel <- function() {
             tags$p("Volatility, Sharpe, VaR, beta, risk contribution: each one is defined on the Methodology page.")),
           tags$div(class = "trust-item",
             tags$h4("Limits stated plainly"),
-            tags$p("Fixed-weight backtests, historical windows, and forecasts framed as exploration, not prediction.")),
+            tags$p("Confidence intervals on backtest results, and forecasts scored against a random walk, which they did not beat.")),
           tags$div(class = "trust-item",
             tags$h4("Education, not advice"),
             tags$p("Axis helps you reason about a portfolio. The decision stays yours."))
