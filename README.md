@@ -170,9 +170,7 @@ Pushing to `main` auto-deploys when app paths change (`app.R`, `global.R`, `R/`,
 
 ---
 
-## License & disclaimer
-
-MIT — see repository license if present.
+## Disclaimer
 
 **Educational use only.** Nothing here is investment, tax, or legal advice. Past performance and backtests do not guarantee future results. You are responsible for your own decisions.
 
