@@ -14,6 +14,8 @@ r_mods <- c(
   "allocation.R",
   "backtest.R",
   "backtest_page.R",
+  "forecast_eval.R",
+  "forecast_page.R",
   "landing_ui.R",
   "methodology_ui.R",
   "app_ui.R",

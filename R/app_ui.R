@@ -232,28 +232,8 @@ app_ui <- function() {
 
       tabPanel("Forecast", value = "forecast",
         page_layout(
-          rail = tagList(
-            rail_group("Ticker",
-              selectInput("forecast_sector", "Sector",
-                choices = sector_filter_choices(), selected = "all"),
-              selectInput("forecast_ticker", "Ticker", choices = NULL)
-            ),
-            rail_group("Model",
-              sliderInput("horizon", "Horizon (days)", min = 5, max = 90, value = 30),
-              radioButtons("forecast_mode", "Mode",
-                choices  = c("Conservative (recommended)" = "conservative",
-                             "Aggressive (less reliable)"  = "aggressive"),
-                selected = "conservative"),
-              rail_note("Conservative mode requires more history for a fit.")
-            ),
-            tags$div(class = "rail-note", textOutput("dataAvailability"))
-          ),
-          page_section("01", "Forecast",
-            lead = "ARIMA on prices. Exploratory only, not a trading signal.",
-            plot_plate("forecastPlot", "400px")),
-          page_section("02", "Model evaluation",
-            verbatimTextOutput("forecastMetrics"),
-            plot_plate("forecastAccuracyPlot", "340px"))
+          rail = forecast_rail_ui(),
+          forecast_sections_ui()
         )
       ),
 

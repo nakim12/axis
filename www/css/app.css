@@ -456,7 +456,10 @@ body > .container-fluid > .tab-content > .tab-pane[data-value="methodology"] {
 .bt-notes { padding-left: 1.1rem; margin-top: 0.75rem; }
 .bt-notes li + li { margin-top: 0.25rem; }
 #bt_table td:not(:first-child),
-.bt-ref-table td:not(:first-child) { white-space: nowrap; }
+.bt-ref-table td:not(:first-child),
+.fc-table td { white-space: nowrap; }
+#fc_accuracy > .insight-grid { margin-bottom: 1rem; }
+.fc-table tr.fc-row-active td { background: var(--brass-wash); }
 
 .score-card {
   background: var(--vellum);

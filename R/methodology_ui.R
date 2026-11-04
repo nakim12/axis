@@ -71,8 +71,21 @@ methodology_panel <- function() {
 
     wellPanel(
       h4("Explore \u2192 Forecast"),
-      tags$p(tags$b("ARIMA"), " on prices is ", tags$b("exploratory"), ": useful for methodology demos, not a trading signal. ",
-             "Uncertainty and model error are real; treat forecasts as one input among many.")
+      tags$ul(
+        tags$li(tags$b("Model:"), " ", tags$code("auto.arima"), " on the last two years of daily ", tags$b("log"), " prices, with no seasonal terms. ",
+                "Forecasts and 80% / 95% intervals are converted back to dollars, so the line is the median path. It is exploratory, not a trading signal."),
+        tags$li(tags$b("Rolling-origin test:"), " on a frozen copy of the data, every 5 trading days from January 2015, ARIMA is fitted to the previous 504 days only ",
+                "and forecasts 1, 5 and 21 days ahead. The model order is re-selected every 13 origins (about a quarter) and the coefficients are re-estimated at every origin. ",
+                "A unit test changes all prices after an origin and checks that the forecasts made up to it stay the same."),
+        tags$li(tags$b("Baseline:"), " a random walk, which forecasts that the price stays where it is. Beating it is the minimum bar for a price forecast."),
+        tags$li(tags$b("RelMAE:"), " ARIMA's mean absolute log-price error divided by the random walk's on the same forecasts. Below 1 means ARIMA was more accurate."),
+        tags$li(tags$b("Significance:"), " a two-sided Diebold–Mariano test on absolute errors (with the Harvey–Leybourne–Newbold small-sample correction). ",
+                "Because 21-day forecasts made a week apart overlap, the test allows for correlated errors across ", tags$em("h"), " / 5 origins. ",
+                "With 47 tickers and 3 horizons, some p-values fall below 0.05 by chance, so they are corrected with Benjamini–Hochberg across all 141 tests."),
+        tags$li(tags$b("Coverage:"), " the share of actual prices that landed inside each interval. A well-calibrated 95% interval holds about 95% of them. ",
+                "Coverage is also split into thirds by trailing 21-day volatility, because intervals fitted on calm data tend to be too narrow in turbulent weeks."),
+        tags$li(tags$b("Confidence tag:"), " high if RelMAE is below 0.95 and significant after correction, medium if RelMAE is below 1, otherwise low.")
+      )
     ),
 
     wellPanel(

@@ -12,7 +12,7 @@ fc_select_spec <- function(y) {
 }
 
 fc_is_random_walk <- function(spec) {
-  identical(as.numeric(spec$order), c(0, 1, 0)) && !spec$drift
+  all(as.numeric(spec$order) == c(0, 1, 0)) && !spec$drift
 }
 
 # Re-estimates the coefficients for a fixed order. Falls back to the random

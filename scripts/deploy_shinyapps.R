@@ -58,7 +58,7 @@ font_files <- if (dir.exists("fonts")) {
 } else {
   character()
 }
-data_files <- intersect(file.path("data", "eval", "backtest_results.rds"),
+data_files <- intersect(file.path("data", "eval", c("backtest_results.rds", "forecast_eval.rds")),
                         list.files("data/eval", full.names = TRUE))
 app_files <- c(
   "app.R",
