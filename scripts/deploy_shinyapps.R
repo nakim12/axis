@@ -58,12 +58,15 @@ font_files <- if (dir.exists("fonts")) {
 } else {
   character()
 }
+data_files <- intersect(file.path("data", "eval", "backtest_results.rds"),
+                        list.files("data/eval", full.names = TRUE))
 app_files <- c(
   "app.R",
   if (file.exists("global.R")) "global.R",
   sort(r_files),
   sort(www_files),
-  sort(font_files)
+  sort(font_files),
+  data_files
 )
 
 deploy_args <- list(

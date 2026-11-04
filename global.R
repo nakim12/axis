@@ -12,6 +12,8 @@ r_mods <- c(
   "snapshots.R",
   "scenarios.R",
   "allocation.R",
+  "backtest.R",
+  "backtest_page.R",
   "landing_ui.R",
   "methodology_ui.R",
   "app_ui.R",

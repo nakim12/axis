@@ -166,9 +166,10 @@ app_ui <- function() {
             selected = "minvar"),
           sliderInput("alloc_max_w_pct", "Max weight per name (%)",
             min = 5, max = 100, value = 100, step = 1),
-          rail_note("100% means no cap. Every method stays long-only and fully invested.")
+          rail_note("100% means no cap. Every method stays long-only and fully invested."),
+          rail_note("Sections 01 and 02 use the price history from your last analysis run.")
         ),
-        rail_note("Uses the price history from your last analysis run.")
+        backtest_rail_ui()
       ),
       uiOutput("alloc_lab_need_analyze"),
       page_section("01", "The trade-off",
@@ -184,7 +185,8 @@ app_ui <- function() {
             "Expect its weights to swing when the analysis period changes."
           )
         )
-      )
+      ),
+      backtest_sections_ui()
     )
   ),
 

@@ -450,6 +450,14 @@ body > .container-fluid > .tab-content > .tab-pane[data-value="methodology"] {
 .insight-grid .insight-card { margin-bottom: 0; }
 .insight-grid .insight-card p { margin: 0; }
 
+#bt_body > .insight-grid,
+#bt_reference > .insight-grid { margin-bottom: 1rem; }
+.bt-weights-head { margin-top: 1.25rem; }
+.bt-notes { padding-left: 1.1rem; margin-top: 0.75rem; }
+.bt-notes li + li { margin-top: 0.25rem; }
+#bt_table td:not(:first-child),
+.bt-ref-table td:not(:first-child) { white-space: nowrap; }
+
 .score-card {
   background: var(--vellum);
   border: 1px solid var(--line);

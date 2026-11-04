@@ -98,12 +98,35 @@ methodology_panel <- function() {
         tags$li(tags$b("Min variance:"), " the portfolio with the lowest estimated variance, solved exactly with quadratic programming."),
         tags$li(tags$b("Min variance (shrunk covariance):"), " the same solver on a Ledoit–Wolf (2004) covariance estimate, ",
                 "which pulls the noisy sample covariance toward a constant-correlation target by a data-driven amount. ",
-                "It usually gives steadier weights."),
+                "It matters most when there are many names relative to the length of the window; with a handful of names and a year of data, it changes little."),
         tags$li(tags$b("Inverse volatility:"), " weights proportional to 1 / annualized volatility; names over the cap are clipped and the excess goes to the rest in proportion."),
         tags$li(tags$b("Equal weight:"), " 1/", tags$em("n"), " on each name in the covariance sample."),
         tags$li(tags$b("Max Sharpe:"), " the long-only portfolio with the highest estimated Sharpe ratio, solved exactly as a quadratic program ",
                 "(minimize ", tags$em("y′Σy"), " subject to ", tags$em("μ′y = 1"), ", ", tags$em("y ≥ 0"), ", then rescale ", tags$em("y"), " to sum to 1). ",
                 "If no capped mix has a positive expected return, it falls back to min variance and says so.")
+      )
+    ),
+
+    wellPanel(
+      h4("Walk-forward backtest"),
+      tags$ul(
+        tags$li(tags$b("No look-ahead:"), " on the last trading day of each month, every method re-estimates from the trailing window only ",
+                "(6 months, 1 year, or 2 years of daily returns), trades at that day's close, and earns returns from the next day. ",
+                "Using later data to choose earlier weights is look-ahead bias; it flatters every optimizer, max Sharpe most of all. ",
+                "A unit test changes all returns after a rebalance date and checks that the weights chosen on that date stay the same."),
+        tags$li(tags$b("Drift:"), " between rebalances, weights move with prices, as in a real account."),
+        tags$li(tags$b("Turnover and costs:"), " turnover at a rebalance is half the sum of absolute weight changes; cost is turnover × the bps rate, ",
+                "taken from that day's return. The initial purchase is not charged, and the benchmark is held without costs."),
+        tags$li(tags$b("Short histories:"), " a ticker without a full estimation window is left out until it has one, and the page lists it."),
+        tags$li(tags$b("Sharpe and its uncertainty:"), " Sharpe uses excess returns over the 13-week T-bill rate. ",
+                "95% intervals come from a stationary block bootstrap (Politis & Romano, 1994; mean block 21 days), resampling the same days for every method, ",
+                "so the interval for the difference from equal weight is a paired comparison. If it includes zero, the gap is not distinguishable from noise."),
+        tags$li(tags$b("In sample vs walk-forward:"), " max Sharpe is also fitted once on the whole period with hindsight. ",
+                "The gap between that and its walk-forward Sharpe shows how much of an optimizer's apparent edge comes from knowing the answer."),
+        tags$li(tags$b("Reference results:"), " the same test on two ETF universes and settings chosen before any results were computed, ",
+                "run on a frozen copy of the data so the numbers can be reproduced exactly."),
+        tags$li(tags$b("Limits:"), " one historical path; your tickers are ones you chose today (survivorship and hindsight bias); ",
+                "no taxes, slippage, or bid-ask spreads beyond the flat cost.")
       )
     ),
 

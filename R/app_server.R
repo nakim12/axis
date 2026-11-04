@@ -445,6 +445,7 @@ app_server <- function(input, output, session) {
       portfolio$benchmark_data    <- benchmark_data
       portfolio$benchmark_returns <- bench_returns
       portfolio$benchmark_name    <- names(benchmark_choices)[benchmark_choices == input$benchmark_ticker]
+      portfolio$benchmark_ticker  <- input$benchmark_ticker
       portfolio$metrics           <- metrics
       portfolio$weights_frac      <- weights_frac
       portfolio$sector_weights    <- sector_w
@@ -1413,7 +1414,7 @@ app_server <- function(input, output, session) {
     if (isTRUE(portfolio$analyzed)) return(NULL)
     empty_state(
       "No weights to compare yet.",
-      "Analyze a portfolio to compare your weights with min-variance, inverse-vol, equal-weight, and max-Sharpe models.",
+      "Analyze a portfolio to compare your weights with model portfolios, then backtest them month by month.",
       cta_id = "empty_sample_alloc"
     )
   })
@@ -1540,6 +1541,8 @@ app_server <- function(input, output, session) {
       }
     )
   })
+
+  backtest_server(input, output, session, portfolio)
 
   # ══════════════════════════════════════════════════════════════════════════
   # EXPLORE — single names (prices & returns, forecast, risk)
