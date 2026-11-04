@@ -6,7 +6,7 @@ suppressPackageStartupMessages({
 })
 
 for (f in c("config.R", "eval_config.R", "metrics.R", "scenarios.R",
-            "portfolio.R", "allocation.R")) {
+            "portfolio.R", "allocation.R", "backtest.R")) {
   suppressPackageStartupMessages(source(file.path(root, "R", f), local = FALSE))
 }
 
