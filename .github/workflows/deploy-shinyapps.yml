@@ -1,4 +1,5 @@
-# Deploy Shiny app to https://www.shinyapps.io/ on every push to main.
+# Run the unit tests on every push; deploy to https://www.shinyapps.io/ from main
+# only when they pass.
 #
 # One-time setup: add these repository secrets
 # (Settings → Secrets and variables → Actions → New repository secret):
@@ -12,19 +13,22 @@
 #
 # See .github/DEPLOY_SHINYAPPS.md for more detail.
 
-name: Deploy to shinyapps.io
+name: Test and deploy
 
 # Speed: skip this workflow when only docs/README/etc. change (saves ~5–15+ min per push).
 # Full deploy still available anytime via Actions → Run workflow.
 on:
+  # Tests run on every branch; only main deploys.
   push:
-    branches: [main]
+    branches: ["**"]
     paths:
       - "app.R"
       - "global.R"
       - "R/**"
       - "www/**"
       - "fonts/**"
+      - "data/**"
+      - "tests/**"
       - "scripts/deploy_shinyapps.R"
       - "DESCRIPTION"
       - ".github/workflows/deploy-shinyapps.yml"
@@ -37,7 +41,7 @@ jobs:
   deploy:
     # One deploy at a time: shinyapps.io returns HTTP 409 if a prior task is still running.
     concurrency:
-      group: shinyapps-deploy
+      group: shinyapps-deploy-${{ github.ref }}
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -70,6 +74,12 @@ jobs:
           # and breaks: upgrade = (false) → Error: object 'false' not found
           extra-packages: |
             any::rsconnect
+            any::testthat
+
+      # A failing test stops the job here, so nothing is deployed.
+      - name: Run tests
+        run: Rscript -e 'testthat::test_dir("tests/testthat", reporter = "summary", stop_on_failure = TRUE)'
 
       - name: Deploy
+        if: github.ref == 'refs/heads/main'
         run: Rscript scripts/deploy_shinyapps.R
