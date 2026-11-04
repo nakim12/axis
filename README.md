@@ -2,15 +2,23 @@
 
 **A Shiny workspace for self-directed investors who want to stress-test a portfolio—weights, benchmark, and risk—in one place before they commit to a story about “why this allocation.”**
 
-*GitHub:* [nakim12/investment-performance-tracker](https://github.com/nakim12/investment-performance-tracker) — repo folder name may still say “Investment Performance Tracker”; the live product name is **Axis**.
+*GitHub:* [nakim12/axis](https://github.com/nakim12/axis) · *Live:* [nathankim.shinyapps.io/investment-performance-tracker](https://nathankim.shinyapps.io/investment-performance-tracker/)
+
+![Axis landing page with the armillary-sphere hero](docs/screenshots/landing.jpg)
 
 ---
 
 ## What is it?
 
-**Axis** is a Shiny app in the browser. You define a **weighted portfolio** (tickers and weights, or a **sample template**), choose a **benchmark** such as SPY or QQQ, and pull a shared history of adjusted prices from Yahoo Finance. On top of that data you get **Diagnosis** (KPIs, insights, sector and return attribution, CSV/text exports) and **Performance** (your portfolio vs the benchmark plus per-ticker exploration). **Scenarios** replays preset stress windows, applies an optional mechanical daily return shock, and can draw a **bootstrap fan** from historical portfolio returns. **Allocation Lab** suggests alternative long-only weights (min-variance with optional caps, inverse vol, equal weight, projected max Sharpe) on the same window. **Methodology** documents definitions and limits. **Holdings Explorer** groups **Price Trend** and exploratory **Forecast** views; **Risk Analysis** adds deeper single-name risk metrics.
+**Axis** is a Shiny app in the browser. You define a **weighted portfolio** (tickers and weights, or a **sample template**), choose a **benchmark** such as SPY or QQQ, and pull a shared history of adjusted prices from Yahoo Finance. From there:
 
-It is built for questions like: *How does this mix behave versus a simple passive alternative, where are the pressure points, and what happens in rough historical patches?* Start from **Build Portfolio**, then use **Diagnosis**, **Performance**, **Scenarios** (including optional bootstrap fan), and **Allocation Lab** for alternative weighting ideas on the same data window.
+- **Diagnosis** reads the portfolio's risk: headline KPIs, plain-language insights tagged with a **confidence level**, performance and rolling metrics against the benchmark, concentration and risk contribution, holding and sector attribution, and exports.
+- **Stress** replays historical episodes (COVID crash, 2022 sell-off, Q4 2018, and more), applies an optional mechanical daily return shock, and draws a **bootstrap fan** of forward paths.
+- **Allocation** compares your weights with long-only model portfolios (min-variance with optional caps, inverse vol, equal weight, projected max Sharpe) on the same window.
+- **Explore** looks at single names outside the portfolio: price trends and returns, exploratory ARIMA forecasts, and per-ticker risk.
+- **Methodology** (the **?** in the nav) documents every formula and its limits.
+
+It is built for questions like: *How does this mix behave versus a simple passive alternative, where are the pressure points, and what happens in rough historical patches?*
 
 ---
 
@@ -22,36 +30,51 @@ Brokerage apps show **positions** and **P&L**. They rarely help you **compare yo
 
 ## How the session flows
 
-1. **Define** — Tickers, weights (normalized to 100%), optional sample templates, benchmark (SPY, QQQ, VTI, DIA). You can **download or load a portfolio JSON** snapshot (weights, benchmark, dates) to reuse or share a setup.
-2. **Load** — Daily adjusted prices via Yahoo Finance (`quantmod`); you pick the analysis window on the app.
-3. **Diagnose** — Portfolio-level risk/return, drawdowns, rolling metrics, concentration, correlations, holding and sector attribution, plain-language insights, and optional “what to consider next” prompts; export **.txt**, **.csv**, or a **full report (.zip)**. **Pins** (session-only) let you compare the headline metrics table before and after you change the portfolio.
-4. **Performance, scenarios & allocation** — Cumulative paths vs benchmark; **Scenarios** for historical episodes, bps stress, and bootstrap fan; **Allocation Lab** for model weights vs yours.
-5. **Explore** — **Methodology** for formulas; **Holdings Explorer** (price trends and exploratory forecasts) and **Risk Analysis** for per-ticker views.
+1. **Portfolio** — Tickers and weights (normalized to 100%), or one of four sample templates; a benchmark (SPY, QQQ, VTI, DIA) and an analysis window. Holdings show as a weighted ledger with allocation bars by holding and by sector. You can **download or load a portfolio JSON** snapshot to reuse or share a setup.
+2. **Load** — Daily adjusted prices via Yahoo Finance (`quantmod`) for the window you picked.
+3. **Diagnosis** — Risk and return in numbers and in plain language. Each insight is tagged **high**, **medium**, or **low** confidence depending on what it rests on and how much history backs it. One **Export** menu covers the full report (.zip), a text summary, and metrics/attribution CSVs. **Pins** (session-only) compare the headline metrics before and after you change the portfolio.
+4. **Stress and Allocation** — Historical episodes, bps shocks, and the bootstrap fan; then the trade-off between your weights and a model portfolio, with current vs proposed weights side by side.
+5. **Explore and Methodology** — Per-ticker views, and the definitions behind every number.
 
 Everything stays in one Shiny session so you are not jumping between spreadsheets and disconnected chart tools.
+
+| | |
+|---|---|
+| ![Portfolio page](docs/screenshots/portfolio.jpg) | ![Diagnosis page](docs/screenshots/diagnosis.jpg) |
+| ![Stress page](docs/screenshots/stress.jpg) | ![Allocation page](docs/screenshots/allocation.jpg) |
+
+---
+
+## Design
+
+The interface uses an “observatory” theme: parchment, ink, and brass, with Fraunces for display type, Inter for UI text, and JetBrains Mono for numbers. The landing page is a scrollable story inside the Shiny app, anchored by an animated armillary sphere drawn on a canvas. Charts share the same palette and fonts through a ggplot theme rendered with `ragg`.
+
+The app respects `prefers-reduced-motion` (the sphere draws a single still frame and loaders stop animating) and adapts to phone widths, with wide tables scrolling inside their cards.
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────┐
 │  Shiny client (browser)                                      │
-│  Navbar: Home · Build · Diagnosis · Holdings Explorer · Performance · │
-│          Scenarios · Allocation Lab · Risk · Methodology │
-└─────────────────────────────┬───────────────────────────────┘
+│  Navbar: Portfolio · Diagnosis · Stress · Allocation ·       │
+│          Explore · ? (Methodology); wordmark returns Home    │
+│  www/: CSS design tokens, landing sphere + page JS           │
+└─────────────────────────────┬────────────────────────────────┘
                               │ reactive inputs + outputs
                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│  app.R (entry) + R/ modules                                    │
-│  global.R loads: config · helpers · theme · portfolio · snapshots · │
-│  scenarios · allocation · landing · methodology · app_ui · app_server │
-└─────────────────────────────┬───────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  app.R (entry) + R/ modules                                  │
+│  global.R loads: config · helpers · plot_theme · app_theme · │
+│  page_ui · portfolio · snapshots · scenarios · allocation ·  │
+│  landing_ui · methodology_ui · app_ui · app_server           │
+└─────────────────────────────┬────────────────────────────────┘
                               │ getSymbols / merges / stats
                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Market data (Yahoo Finance, via quantmod)                     │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  Market data (Yahoo Finance, via quantmod)                   │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -60,10 +83,11 @@ Everything stays in one Shiny session so you are not jumping between spreadsheet
 
 | Layer | Technology |
 |-------|------------|
-| App runtime | [R](https://www.r-project.org/) + [Shiny](https://shiny.posit.co/) |
+| App runtime | [R](https://www.r-project.org/) + [Shiny](https://shiny.posit.co/), `bslib` (Bootstrap 5) |
 | Data | `quantmod`, `zoo` |
-| Analytics & viz | `dplyr`, `tidyr`, `ggplot2`, `scales`, `reshape2`, `forecast`, `quadprog` |
-| UX | `shinycssloaders` |
+| Analytics | `dplyr`, `tidyr`, `reshape2`, `forecast`, `quadprog`, `jsonlite` |
+| Charts | `ggplot2`, `scales`, rendered with `ragg`; bundled fonts registered via `systemfonts` |
+| Front end | Plain CSS and JS in `www/` (no build step); Shiny's built-in busy indicators |
 | CI deploy | GitHub Actions → [shinyapps.io](https://www.shinyapps.io/) (`rsconnect`) |
 | Static sibling | `Investment Performance Tracker.Rmd` (original report-style analysis; not required to run the app) |
 
@@ -74,22 +98,30 @@ Dependencies for local runs and CI are declared in `DESCRIPTION`.
 ## Repository layout
 
 ```
-Investment-Performance-Tracker/
+axis/
 ├── app.R                         # Shiny entry (calls app_ui / app_server from R/)
 ├── global.R                      # Sources all modules in R/ (runs before app.R)
 ├── DESCRIPTION                   # Package imports (used by Actions for deps)
 ├── R/
-│   ├── config.R                  # Sectors, samples, benchmarks, ggplot theme
+│   ├── config.R                  # Sectors, sample portfolios, benchmarks
 │   ├── helpers.R
+│   ├── plot_theme.R              # ggplot theme, palette, font registration
+│   ├── app_theme.R               # <head> assets, busy indicators, asset versioning
+│   ├── page_ui.R                 # Shared page layout: header, rail, sections, cards
 │   ├── portfolio.R               # Portfolio metrics, attribution, insights
 │   ├── snapshots.R               # JSON snapshots, diagnosis pin compare helpers
 │   ├── scenarios.R               # Stress presets & shock helpers
-│   ├── allocation.R              # Allocation Lab optimizers (quadprog, heuristics)
-│   ├── landing_ui.R              # Home / landing experience
-│   ├── methodology_ui.R          # Methodology tab copy
+│   ├── allocation.R              # Allocation optimizers (quadprog, heuristics)
+│   ├── landing_ui.R              # Home / landing page
+│   ├── methodology_ui.R          # Methodology copy
 │   ├── app_ui.R                  # navbarPage UI definition
-│   ├── app_server.R              # Main server function
-│   └── app_theme.R               # Shared CSS
+│   └── app_server.R              # Main server function
+├── www/
+│   ├── css/                      # tokens.css, app.css, landing.css
+│   ├── js/                       # app.js, landing.js (armillary sphere)
+│   └── img/axis-spinner.svg      # Loading indicator
+├── fonts/                        # Inter and JetBrains Mono for charts
+├── docs/screenshots/             # README images
 ├── scripts/
 │   └── deploy_shinyapps.R        # CI / manual publish helper
 ├── .github/workflows/            # Deploy workflow
@@ -101,14 +133,14 @@ Investment-Performance-Tracker/
 
 ## Run locally
 
-**Prerequisites:** R 4.x, RStudio optional.
+**Prerequisites:** R 4.x, RStudio optional. Production builds with R 4.5.3 and current CRAN packages; older local `bslib` versions render a few details differently, so keep `bslib` and `shiny` up to date when working on styling.
 
 1. Install dependencies (from R, at the project root):
 
    ```r
    install.packages(c(
-     "shiny", "shinycssloaders", "quantmod", "zoo", "forecast",
-     "tidyr", "scales", "reshape2", "dplyr", "ggplot2", "quadprog", "jsonlite"
+     "shiny", "bslib", "quantmod", "zoo", "forecast", "dplyr", "tidyr",
+     "reshape2", "ggplot2", "scales", "ragg", "systemfonts", "quadprog", "jsonlite"
    ))
    ```
 
@@ -122,6 +154,8 @@ Investment-Performance-Tracker/
 
    Or open `app.R` in RStudio and click **Run App**. Keep the working directory at the project root so **`global.R`** loads the `R/` modules before **`app.R`**.
 
+After editing anything in `www/`, bump `ASSET_VERSION` in `R/app_theme.R` so browsers fetch the new files instead of cached ones.
+
 ---
 
 ## Live demo
@@ -132,7 +166,7 @@ Investment-Performance-Tracker/
 
 ## Deploy from GitHub
 
-Pushing to `main` can auto-deploy when app-related paths change. Secrets and manual runs are documented in [`.github/DEPLOY_SHINYAPPS.md`](.github/DEPLOY_SHINYAPPS.md).
+Pushing to `main` auto-deploys when app paths change (`app.R`, `global.R`, `R/`, `www/`, `fonts/`, `DESCRIPTION`, or the deploy script and workflow). The workflow pins R to a version shinyapps.io supports. Secrets and manual runs are documented in [`.github/DEPLOY_SHINYAPPS.md`](.github/DEPLOY_SHINYAPPS.md).
 
 ---
 
