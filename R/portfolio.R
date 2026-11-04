@@ -29,28 +29,15 @@ compute_portfolio_metrics <- function(portfolio_returns, benchmark_returns = NUL
                                       risk_free = 0) {
   r <- portfolio_returns$portfolio_return
 
-  annual_return <- mean(r, na.rm = TRUE) * 252
-  annual_vol    <- sd(r, na.rm = TRUE) * sqrt(252)
-  sharpe        <- (annual_return - risk_free) / annual_vol
-
-  cum      <- cumprod(1 + r)
-  peak     <- cummax(cum)
-  drawdown <- (cum - peak) / peak
-  max_dd   <- min(drawdown)
-
   var_95  <- as.numeric(quantile(r, 0.05, na.rm = TRUE))
   cvar_95 <- mean(r[r <= var_95], na.rm = TRUE)
 
-  downside_r   <- r[r < 0]
-  downside_vol <- if (length(downside_r) > 1) sd(downside_r, na.rm = TRUE) * sqrt(252) else NA
-  sortino      <- if (!is.na(downside_vol) && downside_vol > 0) annual_return / downside_vol else NA
-
   metrics <- list(
-    annual_return     = annual_return,
-    annual_volatility = annual_vol,
-    sharpe_ratio      = sharpe,
-    sortino_ratio     = sortino,
-    max_drawdown      = max_dd,
+    annual_return     = ann_return(r),
+    annual_volatility = ann_vol(r),
+    sharpe_ratio      = sharpe_ratio(r, risk_free),
+    sortino_ratio     = sortino_ratio(r, risk_free),
+    max_drawdown      = max_drawdown(r),
     var_95            = var_95,
     cvar_95           = cvar_95,
     positive_days     = sum(r > 0) / length(r),
@@ -69,19 +56,17 @@ compute_portfolio_metrics <- function(portfolio_returns, benchmark_returns = NUL
       filter(as.character(date) %in% common_dates) %>% arrange(date)
 
     if (nrow(p_aligned) > 10 && nrow(b_aligned) > 10) {
-      excess <- p_aligned$portfolio_return - b_aligned$portfolio_return
+      pr <- p_aligned$portfolio_return
+      br <- b_aligned$portfolio_return
 
-      metrics$benchmark_return  <- mean(b_aligned$portfolio_return, na.rm = TRUE) * 252
-      metrics$excess_return     <- mean(excess, na.rm = TRUE) * 252
-      metrics$tracking_error    <- sd(excess, na.rm = TRUE) * sqrt(252)
-      metrics$information_ratio <- if (metrics$tracking_error > 0) {
+      metrics$benchmark_return  <- ann_return(br)
+      metrics$excess_return     <- ann_return(pr - br)
+      metrics$tracking_error    <- tracking_error(pr, br)
+      metrics$information_ratio <- if (isTRUE(metrics$tracking_error > 0)) {
         metrics$excess_return / metrics$tracking_error
       } else NA
 
-      cov_pb <- cov(p_aligned$portfolio_return, b_aligned$portfolio_return,
-                     use = "complete.obs")
-      var_b  <- var(b_aligned$portfolio_return, na.rm = TRUE)
-      metrics$beta  <- if (var_b > 0) cov_pb / var_b else NA
+      metrics$beta  <- beta_to(pr, br)
       metrics$alpha <- metrics$annual_return - metrics$beta * metrics$benchmark_return
     }
   }
@@ -115,12 +100,8 @@ compute_sector_weights <- function(tickers, weights) {
 # ── Diagnosis computation functions ───────────────────────────────────────────
 
 compute_drawdown_series <- function(portfolio_returns) {
-  r    <- portfolio_returns$portfolio_return
-  cum  <- cumprod(1 + r)
-  peak <- cummax(cum)
-  dd   <- (cum - peak) / peak
-
-  tibble(date = portfolio_returns$date, drawdown = dd)
+  tibble(date     = portfolio_returns$date,
+         drawdown = drawdown_path(portfolio_returns$portfolio_return))
 }
 
 compute_rolling_metrics <- function(portfolio_returns, benchmark_returns = NULL,
@@ -132,15 +113,8 @@ compute_rolling_metrics <- function(portfolio_returns, benchmark_returns = NULL,
   if (n < window) return(NULL)
 
   idx <- window:n
-  rolling_vol <- sapply(idx, function(i) {
-    sd(r[(i - window + 1):i]) * sqrt(252)
-  })
-  rolling_sharpe <- sapply(idx, function(i) {
-    chunk <- r[(i - window + 1):i]
-    m <- mean(chunk); s <- sd(chunk)
-    if (s == 0) return(NA)
-    (m * 252) / (s * sqrt(252))
-  })
+  rolling_vol    <- sapply(idx, function(i) ann_vol(r[(i - window + 1):i]))
+  rolling_sharpe <- sapply(idx, function(i) sharpe_ratio(r[(i - window + 1):i]))
 
   result <- tibble(
     date           = dates[idx],
@@ -158,15 +132,8 @@ compute_rolling_metrics <- function(portfolio_returns, benchmark_returns = NULL,
 
     if (nb >= window) {
       b_idx <- window:nb
-      bench_vol <- sapply(b_idx, function(i) {
-        sd(b[(i - window + 1):i]) * sqrt(252)
-      })
-      bench_sharpe <- sapply(b_idx, function(i) {
-        chunk <- b[(i - window + 1):i]
-        m <- mean(chunk); s <- sd(chunk)
-        if (s == 0) return(NA)
-        (m * 252) / (s * sqrt(252))
-      })
+      bench_vol    <- sapply(b_idx, function(i) ann_vol(b[(i - window + 1):i]))
+      bench_sharpe <- sapply(b_idx, function(i) sharpe_ratio(b[(i - window + 1):i]))
       bench_df <- tibble(
         date                 = b_aligned$date[b_idx],
         bench_rolling_vol    = bench_vol,

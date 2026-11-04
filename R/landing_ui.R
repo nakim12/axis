@@ -161,7 +161,7 @@ landing_panel <- function() {
           tags$span(tags$b("30"), " tickers"),
           tags$span(tags$b("5"), " sectors"),
           tags$span(tags$b("4"), " stress episodes"),
-          tags$span(tags$b("4"), " allocation models")
+          tags$span(tags$b(length(allocation_methods)), " allocation models")
         )
       ),
       tags$a(class = "landing-scroll-cue", href = "#landing-gap",
@@ -271,8 +271,8 @@ landing_panel <- function() {
             "Sector weights, HHI-style concentration, and the names that drive variance."),
           landing_feature("iv", "Scenarios & stress",
             "Replay known rough patches on your weights, then layer a daily shock for a mechanical what-if."),
-          landing_feature("v", "Allocation Lab",
-            "Long-only alternatives with optional position caps, compared side by side with your current mix."),
+          landing_feature("v", "Allocation",
+            "Long-only model portfolios, including max Sharpe and shrunk-covariance min variance, compared side by side with your current mix."),
           landing_feature("vi", "Exports",
             "Portfolio snapshots as JSON, metrics as CSV, and a bundled report you can keep or share.")
         )

@@ -1141,15 +1141,15 @@ app_server <- function(input, output, session) {
     bench_tr <- NA_real_
     bench_vol <- NA_character_
     bench_sharpe <- NA_character_
+    bench_dd <- NA_character_
     if (!is.null(portfolio$benchmark_returns)) {
       btr <- portfolio$benchmark_returns
       bench_tr <- dplyr::last(btr$cumulative_return)
       br <- btr$portfolio_return
-      bench_vol <- sprintf("%.1f%%", sd(br, na.rm = TRUE) * sqrt(252) * 100)
-      bs <- if (sd(br, na.rm = TRUE) > 0) {
-        mean(br, na.rm = TRUE) / sd(br, na.rm = TRUE) * sqrt(252)
-      } else NA_real_
+      bench_vol <- sprintf("%.1f%%", ann_vol(br) * 100)
+      bs <- sharpe_ratio(br)
       bench_sharpe <- if (is.finite(bs)) sprintf("%.2f", bs) else "N/A"
+      bench_dd <- sprintf("%.1f%%", max_drawdown(br) * 100)
     }
     has_bench <- !is.null(portfolio$benchmark_returns)
     tibble(
@@ -1168,7 +1168,7 @@ app_server <- function(input, output, session) {
       ),
       `Max drawdown` = c(
         sprintf("%.1f%%", m$max_drawdown * 100),
-        if (has_bench) "—" else "N/A"
+        if (has_bench) bench_dd else "N/A"
       ),
       `Beta` = c(
         if (!is.null(m$beta) && !is.na(m$beta)) sprintf("%.2f", m$beta) else "N/A",
@@ -1440,13 +1440,9 @@ app_server <- function(input, output, session) {
     validate(need(sum(w0) > 1e-12 && length(w0) >= 1L, "Could not align weights to the return sample."))
 
     method <- input$alloc_method
-    mw <- if (identical(method, "minvar") && !is.null(input$alloc_max_w_pct)) {
-      input$alloc_max_w_pct / 100
-    } else {
-      1
-    }
+    mw <- if (!is.null(input$alloc_max_w_pct)) input$alloc_max_w_pct / 100 else 1
     n <- length(w0)
-    if (identical(method, "minvar") && mw < 1 / n - 1e-9) {
+    if (mw < 1 / n - 1e-9) {
       validate(need(
         FALSE,
         paste0(
@@ -1457,7 +1453,8 @@ app_server <- function(input, output, session) {
       ))
     }
 
-    w1 <- propose_allocation(method, ms$Sigma, ms$mu, max_w = mw)
+    w1 <- propose_allocation(method, ms, max_w = mw)
+    fallback <- attr(w1, "fallback")
     w1 <- w1[tick]
     w1[is.na(w1)] <- 0
     if (sum(w1) < 1e-12) {
@@ -1471,6 +1468,7 @@ app_server <- function(input, output, session) {
       ms = ms,
       w0 = w0,
       w1 = w1,
+      fallback = fallback,
       m0 = portfolio_ann_metrics(w0, ms$mu, ms$Sigma),
       m1 = portfolio_ann_metrics(w1, ms$mu, ms$Sigma)
     )
@@ -1536,7 +1534,10 @@ app_server <- function(input, output, session) {
         tags$span(class = "pair-key pair-key--proposed", "Proposed"),
         tags$span(class = "pair-key-note", "Change in percentage points")
       ),
-      tags$ul(class = "pair-list", rows)
+      tags$ul(class = "pair-list", rows),
+      if (!is.null(d$fallback)) {
+        tags$p(class = "page-footnote", tags$b("Fallback used: "), d$fallback, ".")
+      }
     )
   })
 
@@ -1739,8 +1740,8 @@ app_server <- function(input, output, session) {
       filter(!is.na(daily_return)) %>%
       summarise(
         `Total Return`       = sprintf("%.2f%%",  (last(adjusted) / first(adjusted) - 1) * 100),
-        `Volatility (Annual)` = sprintf("%.2f%%", sd(daily_return) * sqrt(252) * 100),
-        `Sharpe Ratio`       = sprintf("%.2f",    mean(daily_return) / sd(daily_return) * sqrt(252)),
+        `Volatility (Annual)` = sprintf("%.2f%%", ann_vol(daily_return) * 100),
+        `Sharpe Ratio`       = sprintf("%.2f",    sharpe_ratio(daily_return)),
         `Best Day`           = sprintf("%.2f%%",  max(daily_return) * 100),
         `Worst Day`          = sprintf("%.2f%%",  min(daily_return) * 100),
         `Current Price`      = sprintf("$%.2f",   last(adjusted))
@@ -1987,16 +1988,13 @@ app_server <- function(input, output, session) {
     df %>%
       arrange(ticker, date) %>%
       group_by(ticker) %>%
-      mutate(
-        daily_return      = (adjusted / dplyr::lag(adjusted)) - 1,
-        cumulative_return = cumprod(1 + replace_na(daily_return, 0)) - 1
-      ) %>%
+      mutate(daily_return = (adjusted / dplyr::lag(adjusted)) - 1) %>%
       filter(!is.na(daily_return)) %>%
       summarise(
-        `Annual Return`  = mean(daily_return, na.rm = TRUE) * 252,
-        `Volatility`     = sd(daily_return, na.rm = TRUE) * sqrt(252),
-        `Sharpe Ratio`   = `Annual Return` / `Volatility`,
-        `Max Drawdown`   = min(cumulative_return, na.rm = TRUE),
+        `Annual Return`  = ann_return(daily_return),
+        `Volatility`     = ann_vol(daily_return),
+        `Sharpe Ratio`   = sharpe_ratio(daily_return),
+        `Max Drawdown`   = max_drawdown(daily_return),
         `VaR (95%)`      = quantile(daily_return, 0.05, na.rm = TRUE),
         `Best Day`       = max(daily_return, na.rm = TRUE),
         `Worst Day`      = min(daily_return, na.rm = TRUE),
@@ -2057,8 +2055,8 @@ app_server <- function(input, output, session) {
       mutate(daily_return = (adjusted / dplyr::lag(adjusted)) - 1) %>%
       filter(!is.na(daily_return)) %>%
       summarise(
-        annual_return = mean(daily_return, na.rm = TRUE) * 252,
-        volatility    = sd(daily_return, na.rm = TRUE) * sqrt(252)
+        annual_return = ann_return(daily_return),
+        volatility    = ann_vol(daily_return)
       )
 
     ggplot(risk_return, aes(x = volatility, y = annual_return)) +

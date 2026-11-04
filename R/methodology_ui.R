@@ -31,8 +31,10 @@ methodology_panel <- function() {
       tags$ul(
         tags$li(tags$b("Annualized volatility:"), " sample standard deviation of daily returns × √252."),
         tags$li(tags$b("Sharpe:"), " (annualized mean return − risk-free) / annualized vol. Risk-free is assumed 0 here."),
-        tags$li(tags$b("Sortino:"), " annualized mean / downside deviation (negative days only), annualized."),
-        tags$li(tags$b("Max drawdown:"), " worst peak-to-trough on the cumulative wealth index."),
+        tags$li(tags$b("Sortino:"), " annualized mean return / annualized downside deviation, where downside deviation is ",
+                "√(mean of min(r, 0)²) over ", tags$em("all"), " days, so gains count as zero rather than being dropped. ",
+                "Shown as N/A when there are no losing days."),
+        tags$li(tags$b("Max drawdown:"), " worst peak-to-trough on the cumulative wealth index, which starts at 1 before the first day, so a first-day loss counts."),
         tags$li(tags$b("VaR / CVaR (95%):"), " historical 5th percentile of daily returns and mean of returns on days at or below that threshold.")
       )
     ),
@@ -91,11 +93,17 @@ methodology_panel <- function() {
       tags$ul(
         tags$li(tags$b("Inputs:"), " sample mean and covariance of daily simple returns on your analysis window, annualized (×252 and ×252 for cov). ",
                 "Your current weights are compared to alternative rules on that same window only."),
-        tags$li(tags$b("Min variance:"), " long-only, fully invested portfolio that minimizes variance subject to an optional per-name cap (solved with quadratic programming)."),
-        tags$li(tags$b("Inverse volatility:"), " weights proportional to 1 / annualized volatility (diagonal of the estimated covariance)."),
+        tags$li(tags$b("Weight cap:"), " every method is long-only and fully invested, and respects the per-name cap. ",
+                "A cap below 1/", tags$em("n"), " is rejected because the weights could not sum to 100%."),
+        tags$li(tags$b("Min variance:"), " the portfolio with the lowest estimated variance, solved exactly with quadratic programming."),
+        tags$li(tags$b("Min variance (shrunk covariance):"), " the same solver on a Ledoit–Wolf (2004) covariance estimate, ",
+                "which pulls the noisy sample covariance toward a constant-correlation target by a data-driven amount. ",
+                "It usually gives steadier weights."),
+        tags$li(tags$b("Inverse volatility:"), " weights proportional to 1 / annualized volatility; names over the cap are clipped and the excess goes to the rest in proportion."),
         tags$li(tags$b("Equal weight:"), " 1/", tags$em("n"), " on each name in the covariance sample."),
-        tags$li(tags$b("Max Sharpe (projected):"), " unconstrained mean–variance tangency weights, then negative weights are set to zero and the vector is renormalized. ",
-                "That is a common heuristic, ", tags$b("not"), " the true constrained max-Sharpe solution; treat it as exploratory.")
+        tags$li(tags$b("Max Sharpe:"), " the long-only portfolio with the highest estimated Sharpe ratio, solved exactly as a quadratic program ",
+                "(minimize ", tags$em("y′Σy"), " subject to ", tags$em("μ′y = 1"), ", ", tags$em("y ≥ 0"), ", then rescale ", tags$em("y"), " to sum to 1). ",
+                "If no capped mix has a positive expected return, it falls back to min variance and says so.")
       )
     ),
 

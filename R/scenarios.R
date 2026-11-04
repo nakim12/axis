@@ -81,15 +81,12 @@ summarize_return_slice <- function(port_slice) {
   if (is.null(port_slice) || nrow(port_slice) < 2) {
     return(NULL)
   }
-  r   <- port_slice$portfolio_return
-  cum <- cumprod(1 + r)
-  peak <- cummax(cum)
-  dd   <- (cum - peak) / peak
+  r <- port_slice$portfolio_return
   list(
     n_days       = nrow(port_slice),
-    total_return = as.numeric(cum[length(cum)] / cum[1] - 1),
-    ann_vol      = sd(r, na.rm = TRUE) * sqrt(252),
-    max_dd       = min(dd),
+    total_return = prod(1 + r[is.finite(r)]) - 1,
+    ann_vol      = ann_vol(r),
+    max_dd       = max_drawdown(r),
     worst_day    = min(r, na.rm = TRUE),
     best_day     = max(r, na.rm = TRUE)
   )

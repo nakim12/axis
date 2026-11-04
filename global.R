@@ -2,6 +2,8 @@
 
 r_mods <- c(
   "config.R",
+  "eval_config.R",
+  "metrics.R",
   "helpers.R",
   "plot_theme.R",
   "app_theme.R",

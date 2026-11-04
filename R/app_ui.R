@@ -162,19 +162,11 @@ app_ui <- function() {
       rail = tagList(
         rail_group("Model portfolio",
           selectInput("alloc_method", "Construction method",
-            choices = c(
-              "Min variance (long-only, optional cap)" = "minvar",
-              "Inverse volatility" = "invvol",
-              "Equal weight" = "equal",
-              "Max Sharpe (projected long-only)" = "maxsharpe_proj"
-            ),
+            choices = allocation_methods,
             selected = "minvar"),
-          conditionalPanel(
-            condition = "input.alloc_method == 'minvar'",
-            sliderInput("alloc_max_w_pct", "Max weight per name (%)",
-              min = 5, max = 100, value = 100, step = 1),
-            rail_note("100% means no cap. The solver stays long-only and fully invested.")
-          )
+          sliderInput("alloc_max_w_pct", "Max weight per name (%)",
+            min = 5, max = 100, value = 100, step = 1),
+          rail_note("100% means no cap. Every method stays long-only and fully invested.")
         ),
         rail_note("Uses the price history from your last analysis run.")
       ),
@@ -186,10 +178,10 @@ app_ui <- function() {
       page_section("02", "Weights, current vs proposed",
         uiOutput("alloc_weight_pairs"),
         conditionalPanel(
-          condition = "input.alloc_method == 'maxsharpe_proj'",
+          condition = "input.alloc_method == 'maxsharpe'",
           tags$p(class = "page-footnote",
-            tags$b("Max Sharpe (projected)"), " solves the unconstrained tangency portfolio, ",
-            "then clips negative weights and renormalizes. It is an approximation, not a constrained optimizer."
+            tags$b("Max Sharpe"), " leans entirely on estimated mean returns, which are noisy over short windows. ",
+            "Expect its weights to swing when the analysis period changes."
           )
         )
       )

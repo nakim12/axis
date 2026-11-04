@@ -14,7 +14,7 @@
 
 - **Diagnosis** reads the portfolio's risk: headline KPIs, plain-language insights tagged with a **confidence level**, performance and rolling metrics against the benchmark, concentration and risk contribution, holding and sector attribution, and exports.
 - **Stress** replays historical episodes (COVID crash, 2022 sell-off, Q4 2018, and more), applies an optional mechanical daily return shock, and draws a **bootstrap fan** of forward paths.
-- **Allocation** compares your weights with long-only model portfolios (min-variance with optional caps, inverse vol, equal weight, projected max Sharpe) on the same window.
+- **Allocation** compares your weights with long-only model portfolios (min variance on sample or Ledoit-Wolf shrunk covariance, inverse vol, equal weight, max Sharpe), all under the same optional weight cap, on the same window.
 - **Explore** looks at single names outside the portfolio: price trends and returns, exploratory ARIMA forecasts, and per-ticker risk.
 - **Methodology** (the **?** in the nav) documents every formula and its limits.
 
@@ -104,6 +104,8 @@ axis/
 ├── DESCRIPTION                   # Package imports (used by Actions for deps)
 ├── R/
 │   ├── config.R                  # Sectors, sample portfolios, benchmarks
+│   ├── eval_config.R             # Fixed evaluation universes, dates, defaults
+│   ├── metrics.R                 # Return and risk metric definitions
 │   ├── helpers.R
 │   ├── plot_theme.R              # ggplot theme, palette, font registration
 │   ├── app_theme.R               # <head> assets, busy indicators, asset versioning
@@ -111,7 +113,7 @@ axis/
 │   ├── portfolio.R               # Portfolio metrics, attribution, insights
 │   ├── snapshots.R               # JSON snapshots, diagnosis pin compare helpers
 │   ├── scenarios.R               # Stress presets & shock helpers
-│   ├── allocation.R              # Allocation optimizers (quadprog, heuristics)
+│   ├── allocation.R              # Long-only optimizers (quadprog), Ledoit-Wolf shrinkage
 │   ├── landing_ui.R              # Home / landing page
 │   ├── methodology_ui.R          # Methodology copy
 │   ├── app_ui.R                  # navbarPage UI definition
@@ -121,9 +123,12 @@ axis/
 │   ├── js/                       # app.js, landing.js (armillary sphere)
 │   └── img/axis-spinner.svg      # Loading indicator
 ├── fonts/                        # Inter and JetBrains Mono for charts
+├── data/eval/                    # Frozen evaluation prices + risk-free (see MANIFEST.md)
+├── tests/testthat/               # Unit tests (run in CI before deploy)
 ├── docs/screenshots/             # README images
 ├── site/                         # axis.nakim.me wrapper page (Vercel)
 ├── scripts/
+│   ├── build_eval_data.R         # Rebuilds data/eval/ (changes every reported number)
 │   └── deploy_shinyapps.R        # CI / manual publish helper
 ├── .github/workflows/            # Deploy workflow
 ├── Investment Performance Tracker.Rmd
@@ -167,9 +172,19 @@ The app is hosted on [shinyapps.io](https://nathankim.shinyapps.io/investment-pe
 
 ---
 
+## Tests
+
+Unit tests in `tests/testthat/` check the risk metrics, the optimizers, and attribution against hand-computed values. The Ledoit-Wolf estimator is also checked against a loop-by-loop transcription of the paper's formulas. Run them from the project root:
+
+```r
+testthat::test_dir("tests/testthat")
+```
+
+---
+
 ## Deploy from GitHub
 
-Pushing to `main` auto-deploys when app paths change (`app.R`, `global.R`, `R/`, `www/`, `fonts/`, `DESCRIPTION`, or the deploy script and workflow). The workflow pins R to a version shinyapps.io supports. Secrets and manual runs are documented in [`.github/DEPLOY_SHINYAPPS.md`](.github/DEPLOY_SHINYAPPS.md).
+GitHub Actions runs the tests on every push that touches app code (`app.R`, `global.R`, `R/`, `www/`, `fonts/`, `data/`, `tests/`, `DESCRIPTION`, or the deploy script and workflow). On `main`, it then deploys, but only if every test passed. The workflow pins R to a version shinyapps.io supports. Secrets and manual runs are documented in [`.github/DEPLOY_SHINYAPPS.md`](.github/DEPLOY_SHINYAPPS.md).
 
 ---
 
